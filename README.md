@@ -43,5 +43,7 @@ Cards can only be changed in code:
 
 ## Publishing updates
 
-`index.html` loads the CSS/JS with a version tag (`?v=2026.11.26.1`). When you change any of those files, bump the
-tag in `index.html` and upload it too, so browsers fetch the new files instead of cached ones.
+The site sits behind Cloudflare, which caches CSS/JS for up to 4 hours. So updates show up immediately, add a
+Cloudflare Cache Rule for this path: **Caching → Cache Rules → Create rule** — *URI Path starts with* `/cc-tracker/`
+→ **Bypass cache**, and **Browser TTL → Respect origin** (GitHub Pages sends 10 minutes). Otherwise use
+**Caching → Purge Cache** after uploading, or hard-refresh (Cmd + Shift + R).
