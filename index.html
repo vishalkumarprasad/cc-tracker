@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>VKP's CC Tracker</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='7' width='26' height='18' rx='4' fill='%2315151a'/%3E%3Crect x='7' y='12' width='6' height='5' rx='1' fill='%23d4b46a'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="top">
+        <div class="brand">
+          <h1>VKP's CC Tracker</h1>
+          <nav class="month-nav" aria-label="Month">
+            <button class="icon-btn" id="prev-month" type="button" aria-label="Previous month">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+            </button>
+            <span class="month-label" id="month-label" aria-live="polite"></span>
+            <button class="icon-btn" id="next-month" type="button" aria-label="Next month">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+            </button>
+            <button class="this-month" id="this-month" type="button" hidden>This month</button>
+            <div class="sync" id="sync" hidden>
+              <button class="sync-chip" id="sync-chip" type="button">
+                <span class="sync-dot" aria-hidden="true"></span>
+                <span id="sync-text"></span>
+              </button>
+              <button class="icon-btn sync-off" id="sync-disconnect" type="button" aria-label="Disconnect Google Drive" title="Disconnect Google Drive" hidden>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+              </button>
+            </div>
+          </nav>
+        </div>
+
+        <section class="summary" aria-label="Summary">
+          <div class="stat">
+            <span class="stat-label">Outstanding</span>
+            <span class="stat-value" id="sum-outstanding">₹0</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Next due</span>
+            <span class="stat-value" id="sum-next">—</span>
+            <span class="stat-sub" id="sum-next-sub"></span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Paid</span>
+            <span class="stat-value" id="sum-paid">0 / 0</span>
+          </div>
+        </section>
+      </header>
+
+      <section class="grid" id="grid" aria-label="Cards"></section>
+    </main>
+
+    <template id="tile-template">
+      <article class="tile">
+        <div class="stage">
+          <div class="stage-frame">
+            <img class="card-img" alt="" draggable="false" />
+          </div>
+          <div class="actions">
+            <button class="icon-btn edit-btn" type="button" aria-label="Edit amount and due date" title="Edit">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+              </svg>
+            </button>
+            <button class="icon-btn cancel-btn" type="button" aria-label="Cancel" title="Cancel">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+            </button>
+            <button class="icon-btn save-btn" type="button" aria-label="Save" title="Save">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
+            </button>
+          </div>
+        </div>
+        <div class="body">
+          <div class="head">
+            <div class="head-row">
+              <p class="bank"></p>
+              <span class="pill"></span>
+            </div>
+            <h2 class="name"></h2>
+          </div>
+          <div class="fields">
+            <div class="field">
+              <span class="field-label">Amount due</span>
+              <span class="value amount-value"></span>
+              <label class="input-wrap">
+                <span class="prefix">₹</span>
+                <input class="amount" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0" aria-label="Amount due" />
+              </label>
+            </div>
+            <div class="field">
+              <span class="field-label">Due date</span>
+              <span class="value due-value"></span>
+              <label class="input-wrap">
+                <input class="due" type="date" aria-label="Due date" />
+              </label>
+            </div>
+          </div>
+          <button class="paid-toggle" type="button" role="switch" aria-checked="false">
+            <span class="track"><span class="thumb"></span></span>
+            <span class="paid-text">Mark as paid</span>
+          </button>
+        </div>
+      </article>
+    </template>
+
+    <script src="config.js"></script>
+    <script src="cards.js"></script>
+    <script src="sync.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
