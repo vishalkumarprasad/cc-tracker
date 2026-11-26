@@ -5,5 +5,5 @@
  * A client ID is not a secret; it is safe to commit.
  */
 window.CC_CONFIG = {
-  googleClientId: "125931337543-s7f4o8jp691lntmhlsmj6b7k3lm90t0u.apps.googleusercontent.com",
+  googleClientId: "",
 };
