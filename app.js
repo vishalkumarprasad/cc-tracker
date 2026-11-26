@@ -554,7 +554,6 @@
         if (card.id !== selectedId) {
           selectedId = card.id;
           showSelected();
-          writeHash();
         }
       }, 90);
     },
@@ -575,7 +574,6 @@
   function selectCard(id) {
     selectedId = id;
     showSelected();
-    writeHash();
     scrollTrackTo(id);
     const chip = chips.get(id);
     if (chip && picker.scrollWidth > picker.clientWidth) {
@@ -618,20 +616,19 @@
 
   /*
    * Sections (portfolio-style): Home, Monthly and Cards are stacked full-screen pages. Scrolling snaps from
-   * one to the next and the nav icons scroll to a page. The visible page is kept in the URL hash
-   * (#monthly, #cards/<card-id>; Home has none).
+   * one to the next and the nav icons scroll to a page. Like the portfolio, the URL never changes while
+   * moving around. A link such as #monthly or #cards/<card-id> still opens that page/card once, after
+   * which the hash is cleared from the address bar.
    */
 
   const VIEWS = ["home", "monthly", "cards"];
   const REDUCED_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  function writeHash() {
-    const hash = view === "cards" ? "#cards/" + selectedId : view === "monthly" ? "#monthly" : "";
-    if (location.hash !== hash) history.replaceState(null, "", hash || location.pathname + location.search);
-  }
-
+  // Reads a deep link (#monthly, #cards/<card-id>) and removes it from the address bar.
   function readHash() {
-    const m = /^#(monthly|cards)(?:\/(.+))?$/.exec(location.hash);
+    const hash = location.hash;
+    if (hash) history.replaceState(null, "", location.pathname + location.search);
+    const m = /^#(monthly|cards)(?:\/(.+))?$/.exec(hash);
     if (!m) return "home";
     if (m[1] === "cards" && m[2] && cards.some((c) => c.id === decodeURIComponent(m[2]))) {
       selectedId = decodeURIComponent(m[2]);
@@ -652,7 +649,6 @@
       else tab.removeAttribute("aria-current");
     }
     if (view !== "monthly") for (const card of cards) setEditing(card, false);
-    writeHash();
   }
 
   function goTo(next, instant) {
