@@ -413,6 +413,7 @@
       const renewEl = row.querySelector(".row-renew");
       renewEl.textContent = fee && !fee.free && renewal ? shortMonth.format(renewal.date) : "—";
       renewEl.classList.toggle("is-soon", !!renewal && !(fee && fee.free) && renewal.inMonths <= 1);
+      renewEl.classList.toggle("is-none", !(fee && !fee.free && renewal));
     }
 
     $("h-outstanding").textContent = money(billed + unbilled);
@@ -435,12 +436,81 @@
   const picker = $("picker");
   const chips = new Map();
 
-  function renderDetail() {
+  // One details panel per card. Desktop shows the selected one next to the card image;
+  // phones show them all as a sideways swipe carousel (no image).
+  const track = $("detail-track");
+  const detailTemplate = $("detail-template");
+  const panels = new Map();
+  for (const card of cards) {
+    const panel = detailTemplate.content.firstElementChild.cloneNode(true);
+    panel.dataset.card = card.id;
+    panel.setAttribute("aria-label", card.bank + " " + card.name);
+    track.appendChild(panel);
+    panels.set(card.id, panel);
+  }
+
+  function fillPanel(card, panel) {
+    const q = (c) => panel.querySelector("." + c);
+    const thumb = q("d-thumb");
+    if (thumb.getAttribute("src") !== card.image) thumb.src = card.image;
+    q("d-name").textContent = card.bank + " " + card.name;
+    const limit = limitOf(card);
+    const bal = balanceFor(card.id);
+
+    q("d-limit").textContent = limit === null ? "—" : money(limit);
+    q("d-outstanding").textContent = money(bal.total);
+    q("d-billed").textContent = money(bal.billed);
+    q("d-billed-sub").textContent = bal.nextDue
+      ? "Next due " + shortDate.format(bal.nextDue.date) + " · " + bal.nextDue.status.label.toLowerCase()
+      : "No pending dues";
+    q("d-unbilled").textContent = money(bal.unbilled);
+
+    const available = q("d-available");
+    const meter = q("d-meter");
+    if (limit === null) {
+      available.textContent = "—";
+      available.classList.remove("is-negative");
+      meter.hidden = true;
+      q("d-meter-text").textContent = "";
+    } else {
+      const left = limit - bal.total;
+      const pct = limit > 0 ? (bal.total / limit) * 100 : 0;
+      available.textContent = (left < 0 ? "−" : "") + money(Math.abs(left));
+      available.classList.toggle("is-negative", left < 0);
+      meter.hidden = limit <= 0;
+      setMeter(meter, pct);
+      q("d-meter-text").textContent = pctText(pct) + " used · " + money(bal.total) + " of " + money(limit);
+    }
+
+    const st = nextStatement(card);
+    q("d-statement").textContent = st ? shortDate.format(st) : "—";
+    q("d-statement-sub").textContent = st
+      ? ordinal(configNumber(card.statementDay)) + " monthly · " + inDays(daysUntil(st)).toLowerCase()
+      : "";
+
+    const fee = feeOf(card);
+    const rn = nextRenewal(card);
+    if (!fee) {
+      q("d-fee").textContent = "—";
+      q("d-fee-sub").textContent = "";
+    } else if (fee.free) {
+      q("d-fee").textContent = "Lifetime free";
+      q("d-fee-sub").textContent = "No renewal fee";
+    } else {
+      q("d-fee").textContent = money(fee.total);
+      const parts = [money(fee.base) + (fee.tax ? " + " + fee.tax + "% GST" : "")];
+      if (rn) parts.push("renews " + (rn.inMonths === 0 ? "this month" : shortMonth.format(rn.date)));
+      q("d-fee-sub").textContent = parts.join(" · ");
+    }
+  }
+
+  // Updates everything that depends on which card is selected (image, title, dots, visible panel).
+  function showSelected() {
     const card = cards.find((c) => c.id === selectedId) || cards[0];
     if (!card) return;
     selectedId = card.id;
-
     for (const [id, chip] of chips) chip.setAttribute("aria-checked", String(id === card.id));
+    for (const [id, panel] of panels) panel.classList.toggle("is-selected", id === card.id);
 
     detailEl.style.setProperty("--accent", card.accent || "#888");
     if (detailImg.getAttribute("src") !== card.image) {
@@ -450,54 +520,47 @@
     detailImg.alt = card.bank + " " + card.name + " credit card";
     applyHolder($("detail-holder"), card);
     $("detail-title").textContent = card.bank + " " + card.name;
-
-    const limit = limitOf(card);
-    const bal = balanceFor(card.id);
-
-    $("d-limit").textContent = limit === null ? "—" : money(limit);
-    $("d-outstanding").textContent = money(bal.total);
-    $("d-billed").textContent = money(bal.billed);
-    $("d-billed-sub").textContent = bal.nextDue
-      ? "Next due " + shortDate.format(bal.nextDue.date) + " · " + bal.nextDue.status.label.toLowerCase()
-      : "No pending dues";
-    $("d-unbilled").textContent = money(bal.unbilled);
-
-    const available = $("d-available");
-    const meter = $("d-meter");
-    if (limit === null) {
-      available.textContent = "—";
-      available.classList.remove("is-negative");
-      meter.hidden = true;
-      $("d-meter-text").textContent = "";
-    } else {
-      const left = limit - bal.total;
-      const pct = limit > 0 ? (bal.total / limit) * 100 : 0;
-      available.textContent = (left < 0 ? "−" : "") + money(Math.abs(left));
-      available.classList.toggle("is-negative", left < 0);
-      meter.hidden = limit <= 0;
-      setMeter(meter, pct);
-      $("d-meter-text").textContent = pctText(pct) + " used · " + money(bal.total) + " of " + money(limit);
-    }
-
-    const st = nextStatement(card);
-    $("d-statement").textContent = st ? shortDate.format(st) : "—";
-    $("d-statement-sub").textContent = st ? ordinal(configNumber(card.statementDay)) + " monthly · " + inDays(daysUntil(st)).toLowerCase() : "";
-
-    const fee = feeOf(card);
-    const rn = nextRenewal(card);
-    if (!fee) {
-      $("d-fee").textContent = "—";
-      $("d-fee-sub").textContent = "";
-    } else if (fee.free) {
-      $("d-fee").textContent = "Lifetime free";
-      $("d-fee-sub").textContent = "No renewal fee";
-    } else {
-      $("d-fee").textContent = money(fee.total);
-      const parts = [money(fee.base) + (fee.tax ? " + " + fee.tax + "% GST" : "")];
-      if (rn) parts.push("renews " + (rn.inMonths === 0 ? "this month" : shortMonth.format(rn.date)));
-      $("d-fee-sub").textContent = parts.join(" · ");
-    }
   }
+
+  function renderDetail() {
+    for (const card of cards) fillPanel(card, panels.get(card.id));
+    showSelected();
+  }
+
+  /* Phone carousel: scrolling picks the card; picking a card scrolls to it. */
+  function panelIndexInView() {
+    const step = track.children.length > 1 ? track.children[1].offsetLeft - track.children[0].offsetLeft : track.clientWidth;
+    return Math.max(0, Math.min(cards.length - 1, Math.round(track.scrollLeft / (step || 1))));
+  }
+
+  function scrollTrackTo(id, instant) {
+    const panel = panels.get(id);
+    if (!panel || track.scrollWidth <= track.clientWidth) return;
+    const left = panel.offsetLeft - track.children[0].offsetLeft;
+    track.scrollTo({ left, behavior: instant || REDUCED_MOTION ? "instant" : "smooth" });
+  }
+
+  let trackTimer = null;
+  track.addEventListener(
+    "scroll",
+    () => {
+      if (track.scrollWidth <= track.clientWidth) return;
+      // Dots follow the finger immediately; the URL/title settle once scrolling stops.
+      const live = cards[panelIndexInView()];
+      for (const [id, chip] of chips) chip.setAttribute("aria-checked", String(id === live.id));
+      clearTimeout(trackTimer);
+      trackTimer = setTimeout(() => {
+        const card = cards[panelIndexInView()];
+        if (card.id !== selectedId) {
+          selectedId = card.id;
+          showSelected();
+          writeHash();
+        }
+      }, 90);
+    },
+    { passive: true },
+  );
+
 
   function ordinal(n) {
     const s = ["th", "st", "nd", "rd"];
@@ -511,8 +574,13 @@
 
   function selectCard(id) {
     selectedId = id;
-    renderDetail();
+    showSelected();
     writeHash();
+    scrollTrackTo(id);
+    const chip = chips.get(id);
+    if (chip && picker.scrollWidth > picker.clientWidth) {
+      picker.scrollTo({ left: chip.offsetLeft - (picker.clientWidth - chip.offsetWidth) / 2, behavior: "smooth" });
+    }
   }
 
   function stepCard(delta) {
@@ -527,6 +595,7 @@
     chip.className = "chip";
     chip.setAttribute("role", "radio");
     chip.title = card.bank + " " + card.name;
+    chip.setAttribute("aria-label", card.bank + " " + card.name);
     const img = document.createElement("img");
     img.src = card.image;
     img.alt = "";
@@ -570,10 +639,14 @@
     return m[1];
   }
 
+  // Phones (≤760px) show one page at a time with a bottom tab bar; desktop stacks pages and snaps on scroll.
+  const MOBILE = window.matchMedia("(max-width: 760px)");
+
   function setActive(next) {
     if (next === view) return;
     view = next;
     document.body.dataset.view = view;
+    for (const v of VIEWS) $("view-" + v).classList.toggle("is-active", v === view);
     for (const tab of document.querySelectorAll(".tab")) {
       if (tab.dataset.view === view) tab.setAttribute("aria-current", "page");
       else tab.removeAttribute("aria-current");
@@ -584,9 +657,63 @@
 
   function goTo(next, instant) {
     const target = VIEWS.includes(next) ? next : "home";
+    if (MOBILE.matches) {
+      setActive(target);
+      window.scrollTo({ top: 0, behavior: "instant" });
+      if (target === "monthly") syncDots();
+      if (target === "cards") scrollTrackTo(selectedId, true);
+      return;
+    }
     $("view-" + target).scrollIntoView({ behavior: instant || REDUCED_MOTION ? "instant" : "smooth", block: "start" });
     setActive(target);
   }
+
+  // Switching between phone and desktop layouts keeps the current page in view.
+  MOBILE.addEventListener("change", () => goTo(view || "home", true));
+
+  /* ---------- Phone: Monthly carousel dots ---------- */
+
+  const dots = $("grid-dots");
+  for (const card of cards) {
+    const dot = document.createElement("span");
+    dot.className = "dot";
+    dots.appendChild(dot);
+  }
+
+  function syncDots() {
+    const tiles = grid.children;
+    if (!tiles.length) return;
+    const step = tiles.length > 1 ? tiles[1].offsetLeft - tiles[0].offsetLeft : grid.clientWidth;
+    const i = Math.max(0, Math.min(tiles.length - 1, Math.round(grid.scrollLeft / (step || 1))));
+    [...dots.children].forEach((d, j) => d.classList.toggle("is-on", j === i));
+  }
+
+  grid.addEventListener("scroll", syncDots, { passive: true });
+
+  /* ---------- Phone: swipe the card image to change card ---------- */
+
+  let touchX = null;
+  let touchY = null;
+  const detailStage = document.querySelector(".detail-stage");
+  detailStage.addEventListener(
+    "touchstart",
+    (ev) => {
+      touchX = ev.touches[0].clientX;
+      touchY = ev.touches[0].clientY;
+    },
+    { passive: true },
+  );
+  detailStage.addEventListener(
+    "touchend",
+    (ev) => {
+      if (touchX === null) return;
+      const dx = ev.changedTouches[0].clientX - touchX;
+      const dy = ev.changedTouches[0].clientY - touchY;
+      touchX = touchY = null;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) stepCard(dx < 0 ? 1 : -1);
+    },
+    { passive: true },
+  );
 
   function refresh() {
     renderMonthly();
@@ -597,7 +724,11 @@
   for (const tab of document.querySelectorAll(".tab")) {
     tab.addEventListener("click", () => goTo(tab.dataset.view));
   }
-  window.addEventListener("hashchange", () => goTo(readHash()));
+  window.addEventListener("hashchange", () => {
+    const next = readHash();
+    renderDetail();
+    goTo(next);
+  });
 
   // Whichever page fills most of the screen is the active one.
   const observer = new IntersectionObserver(
@@ -616,6 +747,7 @@
   const initial = readHash();
   refresh();
   goTo(initial, true);
+  syncDots();
 
   window.addEventListener("storage", (ev) => {
     if (ev.key !== STORAGE_KEY) return;

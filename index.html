@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="dark" />
     <meta name="theme-color" content="#17202a" />
     <meta name="robots" content="noindex, nofollow" />
@@ -66,8 +66,8 @@
               <div class="ledger-row ledger-head" aria-hidden="true">
                 <span>Card</span>
                 <span class="num">Outstanding</span>
-                <span>Utilisation</span>
-                <span class="num">Annual fee</span>
+                <span><span class="long">Utilisation</span><span class="short">Used</span></span>
+                <span class="num"><span class="long">Annual fee</span><span class="short">Fee</span></span>
                 <span class="num">Renews</span>
                 <span></span>
               </div>
@@ -96,6 +96,7 @@
           </div>
 
           <section class="grid" id="grid" aria-label="Cards this month"></section>
+          <div class="dots" id="grid-dots" aria-hidden="true"></div>
         </section>
 
         <!-- ============ Cards ============ -->
@@ -103,6 +104,7 @@
           <div class="view-head">
             <div>
               <h1 class="view-title" id="detail-title"></h1>
+              <h1 class="view-title phone-title">Card details</h1>
             </div>
             <div class="picker" id="picker" role="radiogroup" aria-label="Select card"></div>
           </div>
@@ -123,49 +125,57 @@
               </button>
             </div>
 
-            <div class="detail-info">
-              <div class="hero">
-                <span class="label">Available limit</span>
-                <span class="hero-value" id="d-available">—</span>
-                <div class="meter" id="d-meter"><span id="d-meter-fill"></span></div>
-                <span class="sub" id="d-meter-text"></span>
-              </div>
-
-              <dl class="facts">
-                <div class="fact">
-                  <dt class="label">Total limit</dt>
-                  <dd class="fact-value" id="d-limit">—</dd>
-                </div>
-                <div class="fact">
-                  <dt class="label">Total outstanding</dt>
-                  <dd class="fact-value" id="d-outstanding">—</dd>
-                </div>
-                <div class="fact">
-                  <dt class="label">Billed</dt>
-                  <dd class="fact-value" id="d-billed">—</dd>
-                  <dd class="sub" id="d-billed-sub"></dd>
-                </div>
-                <div class="fact">
-                  <dt class="label">Unbilled</dt>
-                  <dd class="fact-value" id="d-unbilled">—</dd>
-                  <dd class="sub">No due date yet</dd>
-                </div>
-                <div class="fact">
-                  <dt class="label">Next statement</dt>
-                  <dd class="fact-value" id="d-statement">—</dd>
-                  <dd class="sub" id="d-statement-sub"></dd>
-                </div>
-                <div class="fact">
-                  <dt class="label">Annual fee</dt>
-                  <dd class="fact-value" id="d-fee">—</dd>
-                  <dd class="sub" id="d-fee-sub"></dd>
-                </div>
-              </dl>
-            </div>
+            <div class="detail-track" id="detail-track"></div>
           </article>
         </section>
       </main>
     </div>
+
+    <template id="detail-template">
+    <div class="detail-info">
+      <div class="d-top">
+        <img class="d-thumb" alt="" draggable="false" />
+        <span class="d-name"></span>
+      </div>
+      <div class="hero">
+        <span class="label">Available limit</span>
+        <span class="hero-value d-available">—</span>
+        <div class="meter d-meter"><span></span></div>
+        <span class="sub d-meter-text"></span>
+      </div>
+
+      <dl class="facts">
+        <div class="fact">
+          <dt class="label">Total limit</dt>
+          <dd class="fact-value d-limit">—</dd>
+        </div>
+        <div class="fact">
+          <dt class="label">Total outstanding</dt>
+          <dd class="fact-value d-outstanding">—</dd>
+        </div>
+        <div class="fact">
+          <dt class="label">Billed</dt>
+          <dd class="fact-value d-billed">—</dd>
+          <dd class="sub d-billed-sub"></dd>
+        </div>
+        <div class="fact">
+          <dt class="label">Unbilled</dt>
+          <dd class="fact-value d-unbilled">—</dd>
+          <dd class="sub">No due date yet</dd>
+        </div>
+        <div class="fact">
+          <dt class="label">Next statement</dt>
+          <dd class="fact-value d-statement">—</dd>
+          <dd class="sub d-statement-sub"></dd>
+        </div>
+        <div class="fact">
+          <dt class="label">Annual fee</dt>
+          <dd class="fact-value d-fee">—</dd>
+          <dd class="sub d-fee-sub"></dd>
+        </div>
+      </dl>
+    </div>
+    </template>
 
     <template id="row-template">
       <li>
