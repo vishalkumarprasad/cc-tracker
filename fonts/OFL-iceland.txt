@@ -1,8 +1,9 @@
-Copyright 2026 The Geist Project Authors (https://github.com/vercel/geist-font)
+Copyright (c) 2011, Cyreal (www.cyreal.org),
+with Reserved Font Name "Iceland".
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:
-https://openfontlicense.org
+http://scripts.sil.org/OFL
 
 
 -----------------------------------------------------------

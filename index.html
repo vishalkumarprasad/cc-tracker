@@ -3,7 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="light" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#17202a" />
     <meta name="robots" content="noindex, nofollow" />
     <title>VKP's CC Tracker</title>
     <link
@@ -13,50 +14,177 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main class="shell">
-      <header class="top">
-        <div class="brand">
-          <h1>VKP's CC Tracker</h1>
-          <nav class="month-nav" aria-label="Month">
-            <button class="icon-btn" id="prev-month" type="button" aria-label="Previous month">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
-            </button>
-            <span class="month-label" id="month-label" aria-live="polite"></span>
-            <button class="icon-btn" id="next-month" type="button" aria-label="Next month">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
-            </button>
-            <button class="this-month" id="this-month" type="button" hidden>This month</button>
-            <div class="sync" id="sync" hidden>
-              <button class="sync-chip" id="sync-chip" type="button">
-                <span class="sync-dot" aria-hidden="true"></span>
-                <span id="sync-text"></span>
-              </button>
-              <button class="icon-btn sync-off" id="sync-disconnect" type="button" aria-label="Disconnect Google Drive" title="Disconnect Google Drive" hidden>
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
-              </button>
-            </div>
-          </nav>
+    <div class="shell">
+      <nav class="navigation" aria-label="Views">
+        <div class="nav-tabs">
+          <button class="nav-link tab" id="tab-home" type="button" data-view="home" aria-controls="view-home" aria-label="Home" title="Home"><i class="ico" data-icon="home"></i></button>
+          <button class="nav-link tab" id="tab-monthly" type="button" data-view="monthly" aria-controls="view-monthly" aria-label="Monthly" title="Monthly"><i class="ico" data-icon="calendar"></i></button>
+          <button class="nav-link tab" id="tab-cards" type="button" data-view="cards" aria-controls="view-cards" aria-label="Cards" title="Cards"><i class="ico" data-icon="credit-card"></i></button>
         </div>
+      </nav>
 
-        <section class="summary" aria-label="Summary">
-          <div class="stat">
-            <span class="stat-label">Outstanding</span>
-            <span class="stat-value" id="sum-outstanding">₹0</span>
+      <div class="sync" id="sync" hidden>
+        <button class="sync-btn" id="sync-chip" type="button" aria-haspopup="true" aria-expanded="false">
+          <i class="ico" data-icon="cloud"></i>
+          <span class="sync-dot" aria-hidden="true"></span>
+        </button>
+        <div class="sync-pop" id="sync-pop" role="dialog" aria-label="Google Drive sync" hidden>
+          <p class="sync-status"><span class="sync-dot" aria-hidden="true"></span><span id="sync-text"></span></p>
+          <div class="sync-actions">
+            <button class="pill-btn" id="sync-now" type="button">Sync now</button>
+            <button class="pill-btn" id="sync-disconnect" type="button">Disconnect</button>
           </div>
-          <div class="stat">
-            <span class="stat-label">Next due</span>
-            <span class="stat-value" id="sum-next">—</span>
-            <span class="stat-sub" id="sum-next-sub"></span>
+        </div>
+      </div>
+
+      <main class="stage-area">
+        <!-- ============ Home ============ -->
+        <section class="view" id="view-home" aria-labelledby="tab-home">
+          <div class="view-head">
+            <div>
+              <h1 class="view-title">VKP's CC Tracker</h1>
+            </div>
           </div>
-          <div class="stat">
-            <span class="stat-label">Paid</span>
-            <span class="stat-value" id="sum-paid">0 / 0</span>
+
+          <div class="home">
+            <section class="panel stats" aria-label="Outstanding">
+              <div class="stat">
+                <span class="label">Total outstanding</span>
+                <span class="stat-value" id="h-outstanding">₹0</span>
+              </div>
+              <div class="stat">
+                <span class="label">Billed</span>
+                <span class="stat-value" id="h-billed">₹0</span>
+              </div>
+              <div class="stat">
+                <span class="label">Unbilled</span>
+                <span class="stat-value" id="h-unbilled">₹0</span>
+              </div>
+            </section>
+
+            <section class="panel ledger" aria-label="Cards">
+              <div class="ledger-row ledger-head" aria-hidden="true">
+                <span>Card</span>
+                <span class="num">Outstanding</span>
+                <span>Utilisation</span>
+                <span class="num">Annual fee</span>
+                <span class="num">Renews</span>
+                <span></span>
+              </div>
+              <ul class="rows" id="h-rows"></ul>
+            </section>
           </div>
         </section>
-      </header>
 
-      <section class="grid" id="grid" aria-label="Cards"></section>
-    </main>
+        <!-- ============ Monthly ============ -->
+        <section class="view" id="view-monthly" aria-labelledby="tab-monthly">
+          <div class="view-head">
+            <div>
+              <div class="month-nav">
+                <h1 class="view-title" id="month-label" aria-live="polite"></h1>
+                <div class="month-arrows">
+                  <button class="icon-btn round" id="prev-month" type="button" aria-label="Previous month">
+                    <i class="ico" data-icon="left"></i>
+                  </button>
+                  <button class="icon-btn round" id="next-month" type="button" aria-label="Next month">
+                    <i class="ico" data-icon="right"></i>
+                  </button>
+                </div>
+                <button class="ghost-btn" id="this-month" type="button" hidden>This month</button>
+              </div>
+            </div>
+          </div>
+
+          <section class="grid" id="grid" aria-label="Cards this month"></section>
+        </section>
+
+        <!-- ============ Cards ============ -->
+        <section class="view" id="view-cards" aria-labelledby="tab-cards">
+          <div class="view-head">
+            <div>
+              <h1 class="view-title" id="detail-title"></h1>
+            </div>
+            <div class="picker" id="picker" role="radiogroup" aria-label="Select card"></div>
+          </div>
+
+          <article class="panel detail" id="detail">
+            <div class="detail-stage">
+              <button class="icon-btn round detail-nav" id="detail-prev" type="button" aria-label="Previous card">
+                <i class="ico" data-icon="left"></i>
+              </button>
+              <div class="detail-frame">
+                <div class="card-face">
+                  <img class="card-img" id="detail-img" alt="" draggable="false" />
+                  <span class="holder" id="detail-holder" aria-hidden="true" hidden></span>
+                </div>
+              </div>
+              <button class="icon-btn round detail-nav" id="detail-next" type="button" aria-label="Next card">
+                <i class="ico" data-icon="right"></i>
+              </button>
+            </div>
+
+            <div class="detail-info">
+              <div class="hero">
+                <span class="label">Available limit</span>
+                <span class="hero-value" id="d-available">—</span>
+                <div class="meter" id="d-meter"><span id="d-meter-fill"></span></div>
+                <span class="sub" id="d-meter-text"></span>
+              </div>
+
+              <dl class="facts">
+                <div class="fact">
+                  <dt class="label">Total limit</dt>
+                  <dd class="fact-value" id="d-limit">—</dd>
+                </div>
+                <div class="fact">
+                  <dt class="label">Total outstanding</dt>
+                  <dd class="fact-value" id="d-outstanding">—</dd>
+                </div>
+                <div class="fact">
+                  <dt class="label">Billed</dt>
+                  <dd class="fact-value" id="d-billed">—</dd>
+                  <dd class="sub" id="d-billed-sub"></dd>
+                </div>
+                <div class="fact">
+                  <dt class="label">Unbilled</dt>
+                  <dd class="fact-value" id="d-unbilled">—</dd>
+                  <dd class="sub">No due date yet</dd>
+                </div>
+                <div class="fact">
+                  <dt class="label">Next statement</dt>
+                  <dd class="fact-value" id="d-statement">—</dd>
+                  <dd class="sub" id="d-statement-sub"></dd>
+                </div>
+                <div class="fact">
+                  <dt class="label">Annual fee</dt>
+                  <dd class="fact-value" id="d-fee">—</dd>
+                  <dd class="sub" id="d-fee-sub"></dd>
+                </div>
+              </dl>
+            </div>
+          </article>
+        </section>
+      </main>
+    </div>
+
+    <template id="row-template">
+      <li>
+        <button class="ledger-row row" type="button">
+          <span class="row-card">
+            <span class="row-thumb"><img alt="" draggable="false" /></span>
+            <span class="row-name">
+              <span class="row-title"></span>
+              <span class="row-bank"></span>
+            </span>
+          </span>
+          <span class="num row-out"></span>
+          <span class="row-util"><span class="meter"><span></span></span><span class="row-pct"></span></span>
+          <span class="num row-fee"></span>
+          <span class="num row-renew"></span>
+          <i class="ico row-chev" data-icon="right"></i>
+        </button>
+      </li>
+    </template>
 
     <template id="tile-template">
       <article class="tile">
@@ -69,16 +197,13 @@
           </div>
           <div class="actions">
             <button class="icon-btn edit-btn" type="button" aria-label="Edit amount and due date" title="Edit">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12 20h9" />
-                <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
-              </svg>
+              <i class="ico" data-icon="edit"></i>
             </button>
             <button class="icon-btn cancel-btn" type="button" aria-label="Cancel" title="Cancel">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+              <i class="ico" data-icon="close"></i>
             </button>
             <button class="icon-btn save-btn" type="button" aria-label="Save" title="Save">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
+              <i class="ico" data-icon="check"></i>
             </button>
           </div>
         </div>
@@ -116,6 +241,7 @@
     </template>
 
     <script src="config.js"></script>
+    <script src="icons.js"></script>
     <script src="cards.js"></script>
     <script src="sync.js"></script>
     <script src="app.js"></script>
