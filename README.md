@@ -39,3 +39,4 @@ Cards can only be changed in code:
 
 1. Put the card image in `images/` (PNG with transparent rounded corners looks best).
 2. Add or remove an entry in `cards.js`. Keep each `id` unique and stable — it's the key for saved data.
+3. Optional `holder: { x | right, y, color }` positions the cardholder text (`CARD_HOLDER`, "V K P") on that card's image.

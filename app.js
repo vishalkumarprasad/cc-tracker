@@ -189,6 +189,16 @@
     el.querySelector(".bank").textContent = card.bank;
     el.querySelector(".name").textContent = card.name;
 
+    const holder = el.querySelector(".holder");
+    if (card.holder && window.CARD_HOLDER) {
+      holder.textContent = window.CARD_HOLDER;
+      if (card.holder.right) holder.style.right = card.holder.right;
+      else holder.style.left = card.holder.x || "8%";
+      holder.style.top = card.holder.y || "78%";
+      if (card.holder.color) holder.style.color = card.holder.color;
+      holder.hidden = false;
+    }
+
     const t = {
       el,
       editing: false,
